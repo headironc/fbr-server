@@ -1,0 +1,57 @@
+name: Clippy & Test & Build
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - edited
+
+jobs:
+  clippy:
+    name: Clippy
+    runs-on: ${{ matrix.os }}
+    env:
+      RUSTLAGS: "-Dwarnings"
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+        os:
+          - ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - run: cargo clippy
+
+  test:
+    name: Test
+    needs: clippy
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+        os:
+          - ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - run: cargo test -- --nocapture
+
+  build:
+    name: Build
+    needs: test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        toolchain:
+          - stable
+        os:
+          - ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
+      - run: cargo build --verbose
