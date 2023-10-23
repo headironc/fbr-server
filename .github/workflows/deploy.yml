@@ -1,0 +1,50 @@
+name: Deploy
+
+concurrency: production
+
+env:
+  APP_NAME: ${{ vars.APP_NAME }}
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: cargo build --release
+
+      # build dockerfile
+      - name: Build Docker Image
+        run: docker build -t ${{ env.APP_NAME }} . && docker save ${{ env.APP_NAME }} > ${{ env.APP_NAME }}.tar
+
+      # use ssh upload docker image to server
+      - name: Upload Docker Image
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          source: ${{ env.APP_NAME }}.tar
+          target: /home/${{ secrets.USERNAME }}/${{ env.APP_NAME }}
+
+      # use ssh login server and run docker-compose
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /home/${{ secrets.USERNAME }}/${{ env.APP_NAME }}
+            docker-compose down
+            docker load < ${{ env.APP_NAME }}.tar
+            docker-compose up -d
