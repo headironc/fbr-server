@@ -5,6 +5,8 @@ use tracing_subscriber::{fmt, prelude::*, registry, EnvFilter};
 
 use fbr_server::{routes::router, state::State};
 
+// just a test
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenv().ok();
