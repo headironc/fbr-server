@@ -51,3 +51,17 @@ impl Config {
         SocketAddr::from((host, port))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_env_addr() {
+        std::env::set_var("PORT", "5008");
+
+        let addr = Config::env_addr();
+
+        assert_eq!(addr.port(), 5008);
+    }
+}
