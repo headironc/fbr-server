@@ -46,3 +46,4 @@ jobs:
             docker-compose down
             docker load < ${{ env.APP_NAME }}.tar
             docker-compose up -d
+            rm -rf ${{ env.APP_NAME }}.tar
