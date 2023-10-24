@@ -88,8 +88,8 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.KEY }}
           script: |
-            sudo docker image rm -f ${{ env.APP_NAME }}
+            docker image rm -f ${{ env.APP_NAME }}
             cd /home/${{ secrets.USERNAME }}/${{ env.APP_NAME }}
-            sudo docker load < ${{ env.APP_NAME }}.tar
-            sudo docker compose up -d
+            docker load < ${{ env.APP_NAME }}.tar
+            docker compose up -d
             rm -rf ${{ env.APP_NAME }}.tar
