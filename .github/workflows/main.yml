@@ -53,3 +53,43 @@ jobs:
       - uses: actions/checkout@v4
       - run: rustup update ${{ matrix.toolchain }} && rustup default ${{ matrix.toolchain }}
       - run: cargo build --verbose
+
+  deploy:
+    name: Deploy
+    needs: [clippy, test, build]
+    runs-on: ubuntu-latest
+    env:
+      APP_NAME: ${{ vars.APP_NAME }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # build dockerfile
+      - name: Build Docker Image
+        run: docker build -t ${{ env.APP_NAME }} . && docker save ${{ env.APP_NAME }} > ${{ env.APP_NAME }}.tar
+
+      # use ssh upload docker image to server
+      - name: Upload Docker Image
+        uses: appleboy/scp-action@v0.1.4
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          source: ${{ env.APP_NAME }}.tar
+          target: /home/${{ secrets.USERNAME }}/${{ env.APP_NAME }}
+
+      # use ssh login server and run docker-compose
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.HOST }}
+          port: ${{ secrets.PORT }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.KEY }}
+          script: |
+            sudo docker image rm -f ${{ env.APP_NAME }}
+            cd /home/${{ secrets.USERNAME }}/${{ env.APP_NAME }}
+            sudo docker load < ${{ env.APP_NAME }}.tar
+            sudo docker compose up -d
+            rm -rf ${{ env.APP_NAME }}.tar
