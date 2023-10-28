@@ -1,7 +1,11 @@
+use tracing::instrument;
+
+#[instrument(level = "info", name = "test_post")]
 pub async fn test_post() -> String {
     "Hello, world!".into()
 }
 
+#[instrument(level = "info", name = "test_get")]
 pub async fn test_get() -> String {
     "Hello, world!".into()
 }
