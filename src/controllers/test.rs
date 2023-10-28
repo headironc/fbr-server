@@ -1,12 +1,18 @@
+use tracing::info;
 use tracing::instrument;
+use tracing::Level;
 
-#[instrument(level = "info", name = "test_post")]
+#[instrument(level = Level::INFO, name = "test_post")]
 pub async fn test_post() -> String {
+    info!("test_post");
+
     "Hello, world!".into()
 }
 
-#[instrument(level = "info", name = "test_get")]
+#[instrument(level = Level::INFO, name = "test_get")]
 pub async fn test_get() -> String {
+    info!("test_get");
+
     "Hello, world!".into()
 }
 
