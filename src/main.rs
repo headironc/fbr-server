@@ -11,7 +11,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     registry()
         .with(
-            EnvFilter::try_from_default_env().unwrap_or("fbr_server=debug,tower_http=debug".into()),
+            EnvFilter::try_from_default_env()
+                .unwrap_or("fbr_server=debug,tower_http=debug,axum::rejection=trace".into()),
         )
         .with(fmt::layer())
         .init();
